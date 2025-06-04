@@ -1,48 +1,43 @@
-name: N2YO Daily Report Test
+name: Manual N2YO Satellite Report
 
-# Triggers for the workflow
 on:
-  workflow_dispatch: # Allows manual triggering from the Actions tab on GitHub
-  push: # Optional: Trigger on pushes to the main branch for testing
-    branches:
-      - main # Or your default branch name
+  workflow_dispatch:  # Manual trigger
 
 jobs:
-  fetch_and_email_report:
-    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+  run-n2yo-fetcher:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4 # Checks out your code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Or your preferred Python version
+          python-version: '3.10'
 
       - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Debug Secrets (Sanitized)
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          echo "Checking required secrets..."
+          [[ -z "${{ secrets.N2YO_API_KEY }}" ]] && echo "Missing N2YO_API_KEY" || echo "N2YO_API_KEY is set"
+          [[ -z "${{ secrets.SMTP_SERVER }}" ]] && echo "Missing SMTP_SERVER" || echo "SMTP_SERVER is set"
+          [[ -z "${{ secrets.RECEIVER_EMAIL }}" ]] && echo "Missing RECEIVER_EMAIL" || echo "RECEIVER_EMAIL is set"
 
       - name: Run N2YO Fetcher Script
         env:
           N2YO_API_KEY: ${{ secrets.N2YO_API_KEY }}
+          OBSERVER_LAT: ${{ secrets.OBSERVER_LAT }}
+          OBSERVER_LNG: ${{ secrets.OBSERVER_LNG }}
+          OBSERVER_ALT: ${{ secrets.OBSERVER_ALT }}
+          CATEGORY_ID: ${{ secrets.CATEGORY_ID }}
+          SEARCH_RADIUS_DEGREES: ${{ secrets.SEARCH_RADIUS_DEGREES }}
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
-          # Optional API Parameters (if you want to override defaults from the script)
-          # If these are not set as secrets, the script will use its internal defaults
-          OBSERVER_LAT: ${{ secrets.OBSERVER_LAT }}
-          OBSERVER_LNG: ${{ secrets.OBSERVER_LNG }}
-          OBSERVER_ALT: ${{ secrets.OBSERVER_ALT }}
-          ISS_NORAD_ID: ${{ secrets.ISS_NORAD_ID }}
-          PASS_DAYS: ${{ secrets.PASS_DAYS }}
-          MIN_VISIBILITY_SECONDS: ${{ secrets.MIN_VISIBILITY_SECONDS }}
-          MIN_ELEVATION_DEGREES: ${{ secrets.MIN_ELEVATION_DEGREES }}
-          SEARCH_RADIUS_DEGREES: ${{ secrets.SEARCH_RADIUS_DEGREES }}
-          CATEGORY_ID: ${{ secrets.CATEGORY_ID }}
-        run: python app.py # Or whatever your Python script is named
+        run: python app.py
