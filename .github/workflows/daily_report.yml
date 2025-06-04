@@ -1,0 +1,36 @@
+name: N2YO Daily Satellite Report
+
+on:
+  schedule:
+    # Runs at 07:00 UTC and 19:00 UTC every day
+    - cron: '0 7 * * *'
+    - cron: '0 19 * * *'
+  workflow_dispatch: # Allows manual triggering from the Actions tab
+
+jobs:
+  fetch_and_email_report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Or your preferred Python 3 version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run N2YO Fetcher Script
+        env:
+          N2YO_API_KEY: ${{ secrets.N2YO_API_KEY }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+        run: python app.py # <--- MAKE SURE THIS MATCHES YOUR PYTHON SCRIPT NAME
