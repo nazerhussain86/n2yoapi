@@ -99,12 +99,26 @@ def send_email(subject, body_html, receiver_email, sender_email, smtp_server, sm
     msg.attach(MIMEText(body_html, 'html'))
     
     try:
+        print(f"Connecting to SMTP server: {smtp_server}:{smtp_port}")
         with smtplib.SMTP(smtp_server, smtp_port) as server:
+            print("Starting TLS...")
             server.starttls()
+            print("Attempting login...")
             server.login(smtp_username, smtp_password)
+            print("Login successful, sending email...")
             server.sendmail(sender_email, receiver_email, msg.as_string())
         print(f"Email sent successfully to {receiver_email}")
         return True
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"SMTP Authentication Error: {e}")
+        print("Common solutions:")
+        print("1. For Gmail: Use App Password instead of regular password")
+        print("2. Enable 2-Factor Authentication and generate App Password")
+        print("3. Check if username/email is correct")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"SMTP Error: {e}")
+        return False
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
