@@ -2,7 +2,9 @@ name: N2YO Daily Satellite Report
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
+    #- cron: '0 0 * * *'  # Runs daily at midnight
+    - cron: '0 5 * * *'  # Runs daily at midnight
+    
   workflow_dispatch: # Allows manual triggering from the Actions tab
 
 jobs:
